@@ -1,0 +1,141 @@
+#  Licensed under the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License. You may obtain
+#  a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#  License for the specific language governing permissions and limitations
+#  under the License.
+
+Version: 2.4
+
+Application:
+  ?:
+    type: edu.monash.merc.Morpheus
+  api_key: $.userConfiguration.api_key
+  org: $.userConfiguration.org
+  password: $.userConfiguration.password
+  instance:
+    ?:
+      type: io.murano.resources.LinuxMuranoInstance
+    name: generateHostname($.instanceConfiguration.unitNamingPattern, 1)
+    flavor: $.instanceConfiguration.flavor
+    keyname: $.instanceConfiguration.keyPair
+    availabilityZone: $.instanceConfiguration.availabilityZone
+    blockDevices:
+      - volume:
+          ?:
+            type: io.murano.resources.CinderVolume
+          name: generateHostname($.instanceConfiguration.unitNamingPattern, 1)
+          sourceImage: 356ff1ed-5960-4ac2-96a1-0c0198e6a999
+          size: 20
+          size: $.instanceConfiguration.volumeSize
+          availabilityZone: $.instanceConfiguration.availabilityZone
+        deviceType: disk
+        bootIndex: 0
+  recordSet:
+    ?:
+      type: io.murano.resources.RecordSet
+    zone: $.recordSetConfiguration.zone
+    name: generateHostname($.recordSetConfiguration.unitNamingPattern, 1)
+
+
+Forms:
+  - instanceConfiguration:
+      fields:
+        - name: flavor
+          type: flavor
+          label: Instance flavor
+          requirements:
+            min_disk: 30
+            min_vcpus: 2
+            min_memory_mb: 2048
+          description: >-
+            Select your desired flavor. Consider that application performance
+            will be affected by your choice.
+        - name: keyPair
+          type: keypair
+          label: Key pair
+          description: >-
+            Select the keypair to control access to instances. You can login
+            to the instance using SSH with this keypair after the deployment
+            has completed.
+        - name: availabilityZone
+          type: azone
+          label: Availability zone
+          description: >-
+            Select the Availability Zone where the application will be created.
+            If you plan to use a volume for your data, this will need to be in
+            the same AZ.
+        - name: volumeSize
+          type: integer
+          label: Volume size
+          initial: 50
+          minValue: 30
+          maxValue: 200
+          description: >-
+            Select your desired flavor. Consider that application performance
+            will be affected by your choice.
+        - name: unitNamingPattern
+          label: Hostname
+          type: string
+          description: An optional host name.
+          required: false
+  - recordSetConfiguration:
+      fields:
+        - name: unitNamingPattern
+          type: string
+          label: Host name
+          required: false
+          maxLength: 64
+          regexpValidator: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+          errorMessages:
+            invalid: Just lowercase letters, numbers and hyphens are allowed.
+          helpText: Just lowercase letters, numbers and hyphens are allowed.
+          description: >-
+            Specify a string that will be used in the instance's hostname and 
+            DNS entry (if available). Just letters, numbers and hyphens are allowed.
+        - name: zone
+          type: zone
+          label: DNS zone
+          description: >-
+            If you have a dedicated project allocation you can select a DNS zone. 
+            A HTTPS certificate will be provisioned for you automatically.
+          required: false
+  - userConfiguration:
+      fields:
+        - name: title
+          type: string
+          required: false
+          hidden: true
+          description: >-
+            Details provided here will configure the Morpheus application
+            so input your NVIDIA API key and organisation.
+        - name: api_key
+          type: string
+          label: API Key
+          regexpValidator: '(^[a-zA-Z0-9]{84}$)'
+          errorMessages:
+            invalid: >-
+              API key should be letters and numbers only and 84 chars long.
+          descriptionTitle: API Key
+          description: >-
+            Provide a the NVIDIA Morpheus API Key
+        - name: org
+          type: string
+          label: Organisation
+          regexpValidator: '^([a-zA-Z0-9]{5,20}$)'
+          errorMessages:
+            invalid: Org value must be letters and numbers only.
+          descriptionTitle: Organisation
+          description: >-
+            Provide the NVIDIA Morpheus Org
+        - name: password
+          type: string
+          label: Password
+          descriptionTitle: Password
+          description: >-
+            Provide a password for Jupyter Lab
