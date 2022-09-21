@@ -14,7 +14,7 @@ done
 
 # Update the system
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -q -y unzip snapd
+apt-get install -q -y nvidia-headless-510 nvidia-utils-510 unzip snapd
 
 # Install yq
 wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -38,35 +38,13 @@ if id vagrant >/dev/null 2>&1; then
 fi
 usermod -a -G microk8s $USERNAME
 
-
-cat << EOF > /tmp/jupyter-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/name: sdk-cli-{{ .Release.Name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-  name: jupyter-lab
-spec:
-  type: NodePort
-  ports:
-  - name: sdk-cli-helper
-    port: 8888
-    targetPort: 8888
-    nodePort: 30888
-    protocol: TCP
-  selector:
-    app.kubernetes.io/name: sdk-cli-{{ .Release.Name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-EOF
-
 su - $USERNAME -c "$SHELL +ex" << EOF
     [ -f $HOME/.ngc/config ] || printf "$API_KEY\n\n$ORG\n\n\n" | ngc config set
 
     # Microk8s setup
     microk8s start
     microk8s kubectl create namespace $NAMESPACE || true
-    microk8s enable dns
+    microk8s enable dns gpu
     microk8s kubectl config view --raw > ~/.kube/config
     chmod 600 ~/.kube/config
 
@@ -79,32 +57,25 @@ su - $USERNAME -c "$SHELL +ex" << EOF
     # Start cluster
 
     # AI ENGINE
-    # Override resources to allow CPU only
-    yq -i '.aiengine.resources = {}' morpheus-ai-engine/values.yaml
-    helm upgrade --install --set ngc.apiKey="$API_KEY" --set resources="{}" --namespace $NAMESPACE ai-engine morpheus-ai-engine
+    helm upgrade --install --set ngc.apiKey="$API_KEY" --namespace $NAMESPACE ai-engine morpheus-ai-engine
 
     # SDK 
-    # Remap SDK to custom image with jupyter
-    yq -i '
-        .sdk.registry = "registry.rc.nectar.org.au" |
-        .sdk.image = "morpheus/morpheus-sdk-jupyterlab" |
-        .sdk.version = "latest"
-    ' morpheus-sdk-client/values.yaml
-
-    # Add environment variables
-    yq -i '
-        .spec.containers.env[0].name = "password" |
-        .spec.containers.env[0].value = "$PASSWORD"
-    ' morpheus-sdk-client/templates/sdk-cli-pod.yaml
-
-    # Add jupyter service
-    cp /tmp/jupyter-service.yaml morpheus-sdk-client/templates/
-
     # Wait for default service account to spin up
     while microk8s kubectl get sa -n morpheus | grep -q 'No resources found'; do sleep 10; done
-    CMD="jupyter lab --port 8888 --allow-root --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0'"
-    helm upgrade --install --set ngc.apiKey="$API_KEY" --set sdk.args="$CMD" --namespace $NAMESPACE helper morpheus-sdk-client
+    helm upgrade --install --set ngc.apiKey="$API_KEY" --namespace $NAMESPACE helper morpheus-sdk-client
 
     # MLFLOW
     helm upgrade --install --set ngc.apiKey="$API_KEY" --namespace $NAMESPACE mlflow morpheus-mlflow
 EOF
+
+# Download and install miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b
+rm Miniconda3-latest-Linux-x86_64.sh
+
+source /root/miniconda3/bin/activate
+conda install -c conda-forge jupyterlab
+
+echo -e "jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0' & disown" >> ~/.bashrc 
+
+jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0' & disown
