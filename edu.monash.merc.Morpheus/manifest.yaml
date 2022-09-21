@@ -13,15 +13,11 @@
 Format: 1.0
 Type: Application
 FullName: edu.monash.merc.Morpheus
-Name: MERC Morpheus
+Name: NVIDIA Morpheus
 Description: |
-  This Murano App uses a microk8s cluster to provide a space to test NVIDIA's Morpheus on the Nectar cloud.
-  It includes a jupyter lab server to make things more user friendly during experimentation.
-
-  The morpheus stack includes:
-  - MLFlow
-  - Triton
-  - Kafka
+  This Murano App uses a microk8s cluster to provide a space to test NVIDIA Morpheus on the Nectar cloud. 
+  It includes a jupyter lab server to make things more user friendly during experimentation. 
+  Package source URL: https://github.com/Monash-Data-Science-and-AI-platform/morpheus-murano/
 
 Author: MeRC
 Tags:

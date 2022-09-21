@@ -79,6 +79,7 @@ rm Miniconda3-latest-Linux-x86_64.sh
 source /root/miniconda3/bin/activate
 conda install -c conda-forge jupyterlab
 
+echo -e "source /root/miniconda3/bin/activate" >> ~/.bashrc
 echo -e "jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0' & disown" >> ~/.bashrc 
 
 jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0' & disown

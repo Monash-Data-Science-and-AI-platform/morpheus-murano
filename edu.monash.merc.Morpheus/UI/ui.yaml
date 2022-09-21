@@ -73,8 +73,8 @@ Forms:
         - name: volumeSize
           type: integer
           label: Volume size
-          initial: 50
-          minValue: 30
+          initial: 75
+          minValue: 75
           maxValue: 200
           description: >-
             Select your desired flavor. Consider that application performance
@@ -123,7 +123,7 @@ Forms:
               API key should be letters and numbers only and 84 chars long.
           descriptionTitle: API Key
           description: >-
-            Provide a the NVIDIA Morpheus API Key
+            Provide your NGC API Key
         - name: org
           type: string
           label: Organisation
@@ -132,7 +132,7 @@ Forms:
             invalid: Org value must be letters and numbers only.
           descriptionTitle: Organisation
           description: >-
-            Provide the NVIDIA Morpheus Org
+            Provide your NGC Organisation
         - name: password
           type: string
           label: Password
