@@ -22,4 +22,5 @@ You can check the health of the cluster using:
 `microk8s kubectl -n morpheus get all`
 
 You can access the Jupyter Lab at `{address}/`
+
 You can access the MLFlow UI at `{address}/mlflow`

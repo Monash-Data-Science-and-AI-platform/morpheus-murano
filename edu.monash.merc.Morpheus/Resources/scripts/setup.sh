@@ -68,6 +68,9 @@ su - $USERNAME -c "$SHELL +ex" << EOF
     helm upgrade --install --set ngc.apiKey="$API_KEY" --namespace $NAMESPACE mlflow morpheus-mlflow
 EOF
 
+# Download start here
+wget https://raw.githubusercontent.com/Monash-Data-Science-and-AI-platform/morpheus-murano/master/StartHere.ipynb
+
 # Download and install miniconda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh -b
