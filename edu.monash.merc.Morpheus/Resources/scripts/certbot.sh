@@ -28,13 +28,9 @@ sed -i 's/^\([ \t]\+server_name[ \t]\+\)_\([ \t]*;[ \t]*\)$/\1'$FQDN'\2/' $NGINX
 sed -i 's/^\([ \t]\+server_names_hash_bucket_size[ \t]\+\).*;$/\1128;/' $NGINX_CFG
 
 # setup nginx let's encrypt certificate, redirect http to https, and enable auto renewal
-echo before
 certbot --nginx --agree-tos --no-eff-email --redirect -d "$FQDN" -m "$EMAIL" $CERTBOT_ARGS &> /dev/null
 
-echo mid
 # display certificate fingerprint
 openssl x509 -noout -fingerprint -sha256 -inform pem -in "$CRT"
-
-echo end?
 
 # vim: ts=2 sw=2 :

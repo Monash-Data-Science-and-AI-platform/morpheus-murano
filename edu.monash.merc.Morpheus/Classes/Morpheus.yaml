@@ -77,8 +77,8 @@ Methods:
               - $._environment.reporter.report($this, 'DNS zone not provided, not setting up HTTPS')
               - $proto: 'http'
               - $fqdn: $ipaddr
-          - $._environment.reporter.report($this, 'Waiting for the morpheus environment to fully initialise... (This will take a few minutes)')
-          - $.poll()
+          # - $._environment.reporter.report($this, 'Waiting for the morpheus environment to fully initialise... (This will take a few minutes)')
+          # - $.poll()
           - $._environment.reporter.report($this, format('Jupyter Lab is available at {pr}://{hn}', pr=>$proto, hn=>$fqdn))
           - $.setAttr(deployed, true)
 
@@ -101,8 +101,8 @@ Methods:
       - $template: $resources.yaml('nginx.template')
       - $.instance.agent.call($template, $resources)
 
-  poll:
-    Body:
-      - $resources: new(sys:Resources)
-      - $template: $resources.yaml('poll.template')
-      - $.instance.agent.call($template, $resources)
+  # poll:
+  #   Body:
+  #     - $resources: new(sys:Resources)
+  #     - $template: $resources.yaml('poll.template')
+  #     - $.instance.agent.call($template, $resources)
