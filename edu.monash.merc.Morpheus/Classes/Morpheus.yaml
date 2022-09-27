@@ -56,7 +56,7 @@ Methods:
           - $.instance.deploy()
           - $resources: new(sys:Resources)
           - $template: $resources.yaml('setup.template').bind(dict(api_key=>$.api_key, org=>$.org, password => $.password))
-          - $._environment.reporter.report($this, 'Instance created. Running setup...')
+          - $._environment.reporter.report($this, 'Instance created. Running setup... (This will take a few minutes)')
           - $.instance.agent.call($template, $resources)
           - $ipaddr: $.instance.ipAddresses.first()
           - $._environment.reporter.report($this, format('SSH will be available at ubuntu@{ipaddr}', ipaddr=>$ipaddr))
@@ -77,6 +77,8 @@ Methods:
               - $._environment.reporter.report($this, 'DNS zone not provided, not setting up HTTPS')
               - $proto: 'http'
               - $fqdn: $ipaddr
+          - $._environment.reporter.report($this, 'Waiting for the morpheus environment to fully initialise... (This will take a few minutes)')
+          - $.poll()
           - $._environment.reporter.report($this, format('Jupyter Lab is available at {pr}://{hn}', pr=>$proto, hn=>$fqdn))
           - $.setAttr(deployed, true)
 
@@ -97,4 +99,10 @@ Methods:
     Body:
       - $resources: new(sys:Resources)
       - $template: $resources.yaml('nginx.template')
+      - $.instance.agent.call($template, $resources)
+
+  poll:
+    Body:
+      - $resources: new(sys:Resources)
+      - $template: $resources.yaml('poll.template')
       - $.instance.agent.call($template, $resources)
