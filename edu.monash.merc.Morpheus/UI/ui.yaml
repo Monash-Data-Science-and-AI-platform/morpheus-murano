@@ -21,7 +21,7 @@ Application:
   instance:
     ?:
       type: io.murano.resources.LinuxMuranoInstance
-    name: generateHostname($.instanceConfiguration.unitNamingPattern, 1)
+    name: generateHostname($.recordSetConfiguration.unitNamingPattern, 1)
     flavor: $.instanceConfiguration.flavor
     keyname: $.instanceConfiguration.keyPair
     availabilityZone: $.instanceConfiguration.availabilityZone
@@ -29,7 +29,7 @@ Application:
       - volume:
           ?:
             type: io.murano.resources.CinderVolume
-          name: generateHostname($.instanceConfiguration.unitNamingPattern, 1)
+          name: generateHostname($.recordSetConfiguration.unitNamingPattern, 1)
           sourceImage: 356ff1ed-5960-4ac2-96a1-0c0198e6a999
           size: 20
           size: $.instanceConfiguration.volumeSize
@@ -79,11 +79,6 @@ Forms:
           description: >-
             Select your desired flavor. Consider that application performance
             will be affected by your choice.
-        - name: unitNamingPattern
-          label: Hostname
-          type: string
-          description: An optional host name.
-          required: false
   - recordSetConfiguration:
       fields:
         - name: unitNamingPattern
@@ -113,7 +108,9 @@ Forms:
           hidden: true
           description: >-
             Details provided here will configure the Morpheus application
-            so input your NVIDIA API key and organisation.
+            so input your NGC API key and organisation. 
+            If you do not have an API key yet you can generate one here:
+            https://ngc.nvidia.com/setup/api-key
         - name: api_key
           type: string
           label: API Key
@@ -132,7 +129,7 @@ Forms:
             invalid: Org value must be letters and numbers only.
           descriptionTitle: Organisation
           description: >-
-            Provide your NGC Organisation
+            Provide your NGC organisation, this is the alphanumeric string NVIDIA provides you with.
         - name: password
           type: string
           label: Password

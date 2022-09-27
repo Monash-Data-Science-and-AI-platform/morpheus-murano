@@ -14,7 +14,7 @@ done
 
 # Update the system
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -q -y nvidia-headless-510 nvidia-utils-510 unzip snapd
+apt-get install -q -y unzip snapd tmux
 
 # Install yq
 wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -44,9 +44,9 @@ su - $USERNAME -c "$SHELL +ex" << EOF
     # Microk8s setup
     microk8s start
     microk8s kubectl create namespace $NAMESPACE || true
-    microk8s enable dns gpu
     microk8s kubectl config view --raw > ~/.kube/config
     chmod 600 ~/.kube/config
+    microk8s enable dns gpu
 
     # Fetch helm charts
     cd /tmp
@@ -66,20 +66,24 @@ su - $USERNAME -c "$SHELL +ex" << EOF
 
     # MLFLOW
     helm upgrade --install --set ngc.apiKey="$API_KEY" --namespace $NAMESPACE mlflow morpheus-mlflow
+
+    # Return to home directory
+    cd /home/ubuntu
+
+    # Download start here
+    wget https://raw.githubusercontent.com/Monash-Data-Science-and-AI-platform/morpheus-murano/master/StartHere.ipynb
+
+    # Download and install miniconda
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b
+    rm Miniconda3-latest-Linux-x86_64.sh
+
+    echo -e "source /home/ubuntu/miniconda3/bin/activate" >> /home/ubuntu/.bashrc
+    echo -e "if ! jupyter lab list | grep -q '8888'; then" >> /home/ubuntu/.bashrc
+    echo -e "    tmux new-session -d -s jupyter" >> /home/ubuntu/.bashrc
+    echo -e "    tmux send -t jupyter \"jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0'\" ENTER" >> /home/ubuntu/.bashrc
+    echo -e "fi" >> /home/ubuntu/.bashrc
+
+    tmux new-session -d -s jupyter
+    tmux send -t jupyter "source /home/ubuntu/miniconda3/bin/activate; conda install -y -c conda-forge jupyterlab; jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0'" ENTER
 EOF
-
-# Download start here
-wget https://raw.githubusercontent.com/Monash-Data-Science-and-AI-platform/morpheus-murano/master/StartHere.ipynb
-
-# Download and install miniconda
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b
-rm Miniconda3-latest-Linux-x86_64.sh
-
-source /root/miniconda3/bin/activate
-conda install -c conda-forge jupyterlab
-
-echo -e "source /root/miniconda3/bin/activate" >> ~/.bashrc
-echo -e "jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0' & disown" >> ~/.bashrc 
-
-jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0' & disown
