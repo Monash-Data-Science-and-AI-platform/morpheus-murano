@@ -85,5 +85,5 @@ su - $USERNAME -c "$SHELL +ex" << EOF
     echo -e "fi" >> /home/ubuntu/.bashrc
 
     tmux new-session -d -s jupyter
-    tmux send -t jupyter "source /home/ubuntu/miniconda3/bin/activate; conda install -y -c conda-forge jupyterlab; jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0'" ENTER
+    tmux send -t jupyter "source /home/ubuntu/miniconda3/bin/activate; conda install -y -c conda-forge jupyterlab tqdm; jupyter lab --port 8888 --no-browser --ServerApp.token='$PASSWORD' --ip='0.0.0.0'" ENTER
 EOF
